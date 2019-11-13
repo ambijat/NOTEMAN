@@ -1,6 +1,5 @@
 
 '''This version is only for windows 10'''
-'''https://github.com/UB-Mannheim/tesseract/wiki'''
 
 
 from tkinter import *
