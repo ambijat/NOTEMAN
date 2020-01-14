@@ -6,7 +6,7 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageGrab
 import pytesseract
-from pytesseract import *
+import numpy as np
 from tkinter import filedialog
 
 import os
@@ -14,6 +14,8 @@ import time
 import datetime
 
 br = str('\n\n')
+tessloc = ''
+pytesseract.pytesseract.tesseract_cmd = tessloc
 
 root = Tk()
 root.title("NoteMaker8")
@@ -194,7 +196,7 @@ def clpocr():
         if len(a) > 2:
             img = ImageGrab.grabclipboard()
             if isinstance(img, Image.Image):
-                rd = pytesseract.image_to_string(img, lang='eng') \
+                rd = pytesseract.image_to_string(np.array(img), lang='eng') \
                     .replace('-\n', '').replace('\n', ' ').encode("ascii", 'ignore')
                 tb1.insert('insert', rfi)
                 tb1.insert('insert', rd)
@@ -202,7 +204,7 @@ def clpocr():
                 tb1.clipboard_clear()
                 count += 1
             else:
-                messagebox.showinfo(title="TASK DONE", message="No Image Files Found.")
+                messagebox.showinfo(title="TASK DONE", message="No Image on Clipboard Found.")
         else:
             count -= 1
             messagebox.showinfo(title="PROCEDURAL ERROR",
@@ -240,7 +242,7 @@ def tesspath():
     else:
         messagebox.showinfo(title="PROCEDURAL ERROR", message="TESSERACT Location Not Set.")
 
-    pytesseract.tesseract_cmd = tessloc
+    pytesseract.pytesseract.tesseract_cmd = tessloc
 
 #+++++++++++++++++++
 
