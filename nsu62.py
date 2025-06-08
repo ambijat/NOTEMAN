@@ -8,6 +8,7 @@ import os
 import time
 import datetime
 import fnmatch
+import subprocess
 
 br = str('\n\n')
 
@@ -79,6 +80,7 @@ def paste():
 
 
 def export():
+    """Write the contents of the text box to a file inside the working folder."""
     cf = tb2.get().replace('\n', '')
     hn = tb6.get().replace('\n', '')
     fc = tb3.get().replace('\n', '')
@@ -86,7 +88,7 @@ def export():
     ds = tb1.get(1.0, 2.0).replace('\n', '')
 
     if len(cf) >= 1 and len(hn) >= 1 and len(fc) >= 1:
-        ff = foloc + "/" + fc
+        ff = os.path.join(foloc, fc)
     else:
         messagebox.showinfo(title="PROCEDURAL ERROR",
                             message="Press FOLDER & File.")
@@ -98,13 +100,9 @@ def export():
         return
     else:
         if len(ff) >= 2 and len(tim) > 1 and ds.find("Content Exported to") == -1:
-            if os.path.exists(ff):
-                ap = 'a'
-            else:
-                ap = 'w'
-            sf = open(ff, ap)
-            sf.write(tim)
-            sf.close()
+            mode = 'a' if os.path.exists(ff) else 'w'
+            with open(ff, mode) as sf:
+                sf.write(tim)
             tb1.delete(1.0, END)
             oki = "Content Exported to\n" + ff + "\nPress RESET."
             tb1.insert('insert', oki)
@@ -162,12 +160,12 @@ def newnote():
 
 
 def opennote():
-    fn = foloc + "/" + tb3.get()
-    fnf = str(fn)
-    import subprocess as sp
-    progName = "leafpad"
-    flName = fnf
-    sp.Popen([progName, flName])
+    """Open the current note file with the system's default editor."""
+    fn = os.path.join(foloc, tb3.get())
+    try:
+        subprocess.Popen(["xdg-open", fn])
+    except FileNotFoundError:
+        messagebox.showinfo(title="PROCEDURAL ERROR", message="Note file not found.")
 
 
 def imgps():
