@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import messagebox
-from PIL import Image
+from PIL import Image, ImageGrab, ImageTk
 import pytesseract
 from tkinter import filedialog
-from os import walk
 import os
 import time
 import datetime
-import fnmatch
+import subprocess
+import numpy as np
 
 br = str('\n\n')
 
@@ -79,6 +79,7 @@ def paste():
 
 
 def export():
+    """Write the contents of the text box to a file inside the working folder."""
     cf = tb2.get().replace('\n', '')
     hn = tb6.get().replace('\n', '')
     fc = tb3.get().replace('\n', '')
@@ -86,7 +87,7 @@ def export():
     ds = tb1.get(1.0, 2.0).replace('\n', '')
 
     if len(cf) >= 1 and len(hn) >= 1 and len(fc) >= 1:
-        ff = foloc + "/" + fc
+        ff = os.path.join(foloc, fc)
     else:
         messagebox.showinfo(title="PROCEDURAL ERROR",
                             message="Press FOLDER & File.")
@@ -98,13 +99,9 @@ def export():
         return
     else:
         if len(ff) >= 2 and len(tim) > 1 and ds.find("Content Exported to") == -1:
-            if os.path.exists(ff):
-                ap = 'a'
-            else:
-                ap = 'w'
-            sf = open(ff, ap)
-            sf.write(tim)
-            sf.close()
+            mode = 'a' if os.path.exists(ff) else 'w'
+            with open(ff, mode) as sf:
+                sf.write(tim)
             tb1.delete(1.0, END)
             oki = "Content Exported to\n" + ff + "\nPress RESET."
             tb1.insert('insert', oki)
@@ -162,15 +159,17 @@ def newnote():
 
 
 def opennote():
-    fn = foloc + "/" + tb3.get()
-    fnf = str(fn)
-    import subprocess as sp
-    progName = "leafpad"
-    flName = fnf
-    sp.Popen([progName, flName])
+    """Open the current note file with the system's default editor."""
+    fn = os.path.join(foloc, tb3.get())
+    try:
+        subprocess.Popen(["xdg-open", fn])
+    except FileNotFoundError:
+        messagebox.showinfo(title="PROCEDURAL ERROR", message="Note file not found.")
 
 
-def imgps():
+
+def clpocr():
+    """Read image from the clipboard, display it, and append OCR text."""
     rfi = tb4.get() + "{" + tb5.get() + "}\n"
     b = len(tb6.get())
     if tb6.get() == "Folder Name Here" or b < 2:
@@ -178,63 +177,36 @@ def imgps():
                             message="Set FOLDER & NEW_NOTE.")
         return
 
-    count = 0
-    a = foloc
-    if len(a) > 2:
-        xa = []
-        for dp, dn, fn in walk(a):
-            fn.sort(key=lambda g: int(g.split(".")[0]))
-            for s in fn:
-                xa.append(a + '/' + s)
-
-        for x in xa:
-            rd = pytesseract.image_to_string(Image.open(x), lang='eng') \
-                .replace('-\n', '').replace('\n', ' ').encode("ascii", 'ignore')
-            tb1.insert('insert', rfi)
-            tb1.insert('insert', rd)
-            tb1.insert('insert', br)
-            count += 1
-
-    else:
-        count -= 1
+    ds = tb1.get(1.0, 2.0).replace('\n', '')
+    if ds.find("Content Exported to") != -1:
         messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-
-    if count == 0:
-        messagebox.showinfo(title="TASK DONE", message="No Image Files Found.")
-    if count > 0:
-        gg = str(count) + " Files Read."
-        messagebox.showinfo(title="TASK DONE", message=gg)
-
-
-def delimg():
-    b = len(tb6.get())
-    if tb6.get() == "Folder Name Here" or b < 2:
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
+                            message="Press RESET before using CLP_OCR.")
         return
 
-    count = 0
-    a = foloc
-    if len(a) > 2:
-        for fn in os.listdir(a):
-            if fn.endswith(".png") or fn.endswith(".jpg"):
-                x = os.path.join(a, fn)
-                os.remove(x)
-                count += 1
-            else:
-                continue
-
-    else:
-        count -= 1
+    try:
+        img = ImageGrab.grabclipboard()
+    except Exception:
         messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
+                            message="Clipboard access not supported.")
+        return
 
-    if count == 0:
-        messagebox.showinfo(title="TASK DONE", message="No Image Files Found.")
-    if count > 0:
-        gg = str(count) + " Files Deleted."
-        messagebox.showinfo(title="TASK DONE", message=gg)
+    if isinstance(img, Image.Image):
+        rd = pytesseract.image_to_string(np.array(img), lang='eng') \
+            .replace('-\n', '').replace('\n', ' ').encode("ascii", 'ignore')
+        tb1.insert('insert', rfi)
+        tb1.insert('insert', rd)
+        tb1.insert('insert', br)
+        tb1.clipboard_clear()
+
+        top = Toplevel(root)
+        top.title("Clipboard Image")
+        imgtk = ImageTk.PhotoImage(img)
+        lbl = Label(top, image=imgtk)
+        lbl.image = imgtk
+        lbl.pack()
+    else:
+        messagebox.showinfo(title="TASK DONE", message="No Image on Clipboard Found.")
+
 
 
 def pgn():
@@ -305,23 +277,19 @@ tb5.bind('<FocusIn>', ready3)
 tb5.bind('<FocusOut>', setback3)
 tb5.grid(row=10, column=0, sticky='NSEW', padx=(1, 1), pady=(1, 1))
 
-pbtn6 = Button(f0, text="OCR_READ", activebackground="yellow", activeforeground="RoyalBlue3",
-               bd="3", bg="powder blue", command=imgps, fg="purple", font=('arial', 10, 'bold'))
-pbtn6.grid(row=11, column=0, sticky='NSEW')
-
-pbtn7 = Button(f0, text="DEL_IMG", activebackground="SeaGreen", activeforeground="lavender",
-               bd="3", bg="powder blue", command=delimg, fg="purple", font=('arial', 10, 'bold'))
-pbtn7.grid(row=12, column=0, sticky='NSEW')
+pbtn10 = Button(f0, text="CLP_OCR", activebackground="yellow", activeforeground="RoyalBlue3",
+               bd="3", bg="powder blue", command=clpocr, fg="purple", font=('arial', 10, 'bold'))
+pbtn10.grid(row=11, column=0, sticky='NSEW')
 
 # ===================COLUMN1
 
 tb1 = Text(f0, font=('arial', 10))
-tb1.grid(row=0, column=1, rowspan=12, sticky='NSEW', padx=(1, 1), pady=(1, 1))
+tb1.grid(row=0, column=1, rowspan=13, sticky='NSEW', padx=(1, 1), pady=(1, 1))
 
 sbr = Scrollbar(f0)
 sbr.config(command=tb1.yview)
 tb1.config(yscrollcommand=sbr.set)
-sbr.grid(row=0, column=2, rowspan=12, sticky='NSEW', padx=(1, 1), pady=(1, 1))
+sbr.grid(row=0, column=2, rowspan=13, sticky='NSEW', padx=(1, 1), pady=(1, 1))
 
 tb2 = Entry(f0, font=('arial', 10))
 tb2.grid(row=12, column=1, sticky='NSEW', padx=(1, 1), pady=(1, 1))
