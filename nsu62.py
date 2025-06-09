@@ -1,9 +1,8 @@
 from tkinter import *
-from tkinter import messagebox
 from PIL import Image, ImageTk
 from io import BytesIO
 import pytesseract
-from tkinter import filedialog
+from tkinter import messagebox, filedialog
 from os import walk
 import os
 import time
@@ -17,6 +16,7 @@ br = str('\n\n')
 # State flags to enforce EXPORT and RESET sequence after CLP_OCR
 needs_export = False
 needs_reset = False
+foloc = ""
 
 root = Tk()
 root.title("NoteMaker6")
@@ -170,7 +170,6 @@ def folder():
                                              initialdir=os.getcwd(), title="Please select a folder:")
             gd = "Working Location : "
             if answer != ():
-                global foloc
                 foloc = str(answer + "/" + tb6.get())
                 tb2.insert('insert', gd + foloc)
                 if not os.path.exists(foloc):
@@ -242,33 +241,6 @@ def clpocr():
         lbl.pack()
 
 
-def ocr_read():
-    """Select an image file from the working folder and append OCR text."""
-    rfi = tb4.get() + "{" + tb5.get() + "}\n"
-    b = len(tb6.get())
-    if tb6.get() == "Folder Name Here" or b < 2:
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-        return
-
-    ft = [('Image files', '*.png *.jpg *.jpeg *.bmp *.tif *.tiff')]
-    fn = filedialog.askopenfilename(parent=root, initialdir=foloc,
-                                    title="Select Image File:", filetypes=ft)
-    if not fn:
-        return
-    try:
-        img = Image.open(fn)
-    except Exception:
-        messagebox.showinfo(title="PROCEDURAL ERROR", message="Cannot open image.")
-        return
-
-    rd = pytesseract.image_to_string(np.array(img), lang='eng') \
-        .replace('-\n', '').replace('\n', ' ')
-    tb1.insert(END, rfi)
-    tb1.insert(END, rd)
-    tb1.insert(END, br)
-
-
 def imgps():
     rfi = tb4.get() + "{" + tb5.get() + "}\n"
     b = len(tb6.get())
@@ -296,7 +268,6 @@ def imgps():
             count += 1
 
     else:
-        count -= 1
         messagebox.showinfo(title="PROCEDURAL ERROR",
                             message="Set FOLDER & NEW_NOTE.")
 
@@ -310,10 +281,7 @@ def imgps():
 def pgn():
     try:
         pg = int(tb5.get().replace('\n', ''))
-        if type(pg) is not int:
-            messagebox.showinfo(title="PROCEDURAL ERROR", message="Invalid Number.")
-        else:
-            pg += 1
+        pg += 1
         tb5.delete(0, END)
         tb5.insert('insert', pg)
     except ValueError:
@@ -325,12 +293,9 @@ def pgp():
     """Decrease the page number displayed in the entry box."""
     try:
         pg = int(tb5.get().replace('\n', ''))
-        if type(pg) is not int:
-            messagebox.showinfo(title="PROCEDURAL ERROR", message="Invalid Number.")
-        else:
-            pg -= 1
-            tb5.delete(0, END)
-            tb5.insert('insert', pg)
+        pg -= 1
+        tb5.delete(0, END)
+        tb5.insert('insert', pg)
     except ValueError:
         messagebox.showinfo(title="PROCEDURAL ERROR", message="Invalid Input.")
         tb5.delete(0, END)
