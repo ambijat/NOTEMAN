@@ -177,6 +177,12 @@ def clpocr():
                             message="Set FOLDER & NEW_NOTE.")
         return
 
+    ds = tb1.get(1.0, 2.0).replace('\n', '')
+    if ds.find("Content Exported to") != -1:
+        messagebox.showinfo(title="PROCEDURAL ERROR",
+                            message="Press RESET before using CLP_OCR.")
+        return
+
     try:
         img = ImageGrab.grabclipboard()
     except Exception:
