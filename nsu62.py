@@ -3,11 +3,9 @@ from tkinter import messagebox
 from PIL import Image, ImageGrab, ImageTk
 import pytesseract
 from tkinter import filedialog
-from os import walk
 import os
 import time
 import datetime
-import fnmatch
 import subprocess
 import numpy as np
 
@@ -169,42 +167,6 @@ def opennote():
         messagebox.showinfo(title="PROCEDURAL ERROR", message="Note file not found.")
 
 
-def imgps():
-    rfi = tb4.get() + "{" + tb5.get() + "}\n"
-    b = len(tb6.get())
-    if tb6.get() == "Folder Name Here" or b < 2:
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-        return
-
-    count = 0
-    a = foloc
-    if len(a) > 2:
-        xa = []
-        for dp, dn, fn in walk(a):
-            fn.sort(key=lambda g: int(g.split(".")[0]))
-            for s in fn:
-                xa.append(a + '/' + s)
-
-        for x in xa:
-            rd = pytesseract.image_to_string(Image.open(x), lang='eng') \
-                .replace('-\n', '').replace('\n', ' ').encode("ascii", 'ignore')
-            tb1.insert('insert', rfi)
-            tb1.insert('insert', rd)
-            tb1.insert('insert', br)
-            count += 1
-
-    else:
-        count -= 1
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-
-    if count == 0:
-        messagebox.showinfo(title="TASK DONE", message="No Image Files Found.")
-    if count > 0:
-        gg = str(count) + " Files Read."
-        messagebox.showinfo(title="TASK DONE", message=gg)
-
 
 def clpocr():
     """Read image from the clipboard, display it, and append OCR text."""
@@ -239,35 +201,6 @@ def clpocr():
     else:
         messagebox.showinfo(title="TASK DONE", message="No Image on Clipboard Found.")
 
-
-def delimg():
-    b = len(tb6.get())
-    if tb6.get() == "Folder Name Here" or b < 2:
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-        return
-
-    count = 0
-    a = foloc
-    if len(a) > 2:
-        for fn in os.listdir(a):
-            if fn.endswith(".png") or fn.endswith(".jpg"):
-                x = os.path.join(a, fn)
-                os.remove(x)
-                count += 1
-            else:
-                continue
-
-    else:
-        count -= 1
-        messagebox.showinfo(title="PROCEDURAL ERROR",
-                            message="Set FOLDER & NEW_NOTE.")
-
-    if count == 0:
-        messagebox.showinfo(title="TASK DONE", message="No Image Files Found.")
-    if count > 0:
-        gg = str(count) + " Files Deleted."
-        messagebox.showinfo(title="TASK DONE", message=gg)
 
 
 def pgn():
@@ -338,17 +271,9 @@ tb5.bind('<FocusIn>', ready3)
 tb5.bind('<FocusOut>', setback3)
 tb5.grid(row=10, column=0, sticky='NSEW', padx=(1, 1), pady=(1, 1))
 
-pbtn6 = Button(f0, text="OCR_READ", activebackground="yellow", activeforeground="RoyalBlue3",
-               bd="3", bg="powder blue", command=imgps, fg="purple", font=('arial', 10, 'bold'))
-pbtn6.grid(row=11, column=0, sticky='NSEW')
-
-pbtn7 = Button(f0, text="DEL_IMG", activebackground="SeaGreen", activeforeground="lavender",
-               bd="3", bg="powder blue", command=delimg, fg="purple", font=('arial', 10, 'bold'))
-pbtn7.grid(row=12, column=0, sticky='NSEW')
-
 pbtn10 = Button(f0, text="CLP_OCR", activebackground="yellow", activeforeground="RoyalBlue3",
                bd="3", bg="powder blue", command=clpocr, fg="purple", font=('arial', 10, 'bold'))
-pbtn10.grid(row=13, column=0, sticky='NSEW')
+pbtn10.grid(row=11, column=0, sticky='NSEW')
 
 # ===================COLUMN1
 
