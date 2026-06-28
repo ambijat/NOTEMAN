@@ -2,7 +2,7 @@
 
 This repository is the historical archive for the NoteMan/NoteMaker experiments.
 
-The active successor is `ambijat/NOTEMAN8WCS`, which rethinks NoteMan as a Workspace Capture System built around source-aware research fragments.
+The active successor is `noteman-wcs`, which rethinks NoteMan as a Workspace Capture System built around source-aware research fragments.
 
 ## What This Repo Contains
 
@@ -31,4 +31,4 @@ Retain files that show a distinct capability:
 - export/reset workflow
 - cross-platform experiments
 
-Move future design, architecture, and new implementation work to `NOTEMAN8WCS`.
+Move future design, architecture, and new implementation work to `noteman-wcs`.
