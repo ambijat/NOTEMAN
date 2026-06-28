@@ -31,4 +31,4 @@ Retain files that show a distinct capability:
 - export/reset workflow
 - cross-platform experiments
 
-Move future design, architecture, and new implementation work to `noteman-wcs`.
+Move future design and Python/shared-format work to `noteman-wcs`. Move Windows C# desktop work to `noteman-desktop`.
